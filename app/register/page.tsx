@@ -14,15 +14,7 @@ type AutoFilledFieldKey =
   | "skills"
   | "employmentStatus";
 
-const mockProfile = {
-  fullName: "Ananya Rao",
-  email: "ananya.rao@example.com",
-  phone: "+91-98765-12345",
-  qualification: "Bachelor of Engineering",
-  branch: "Computer Science",
-  skills: "Java, Spring Boot, SQL, HTML, CSS, JavaScript",
-  employmentStatus: "Fresher" as EmploymentStatus
-};
+const API_BASE_URL = "http://127.0.0.1:5000";
 
 export default function RegistrationPage() {
   const router = useRouter();
@@ -40,33 +32,68 @@ export default function RegistrationPage() {
     Set<AutoFilledFieldKey>
   >(new Set());
 
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   const markAutoFilled = (keys: AutoFilledFieldKey[]) => {
     setAutoFilledFields(new Set(keys));
   };
 
-  const handleResumeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      return;
+ const handleResumeUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  setResumeFileName(file.name);
+  setErrorMsg(null);
+  setLoading(true);
+
+  try {
+    // 1) Upload -> get extracted raw_text
+    const formData = new FormData();
+    formData.append("file", file); // MUST be "file"
+
+    const uploadRes = await fetch(`${API_BASE_URL}/upload`, {
+      method: "POST",
+      body: formData,
+    });
+
+    const uploadJson = await uploadRes.json();
+
+    if (!uploadRes.ok || !uploadJson?.success) {
+      throw new Error(uploadJson?.error || `Upload failed: ${uploadRes.status}`);
     }
 
-    setResumeFileName(file.name);
+    const rawText: string = uploadJson?.data?.raw_text || "";
+    if (!rawText.trim()) throw new Error("No text extracted from resume.");
 
-    // Simple client-side validation: PDF only
-    if (file.type !== "application/pdf") {
-      alert("Please upload a PDF file only for this demo.");
-      event.target.value = "";
-      return;
+    // 2) Extract -> structured data
+    const extractRes = await fetch(`${API_BASE_URL}/extract`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: rawText }),
+    });
+
+    const extractJson = await extractRes.json();
+
+    if (!extractRes.ok || !extractJson?.success) {
+      throw new Error(extractJson?.error || `Extract failed: ${extractRes.status}`);
     }
 
-    // Simulate AI-based extraction with mock data
-    setFullName(mockProfile.fullName);
-    setEmail(mockProfile.email);
-    setPhone(mockProfile.phone);
-    setQualification(mockProfile.qualification);
-    setBranch(mockProfile.branch);
-    setSkills(mockProfile.skills);
-    setEmploymentStatus(mockProfile.employmentStatus);
+    const data = extractJson.data;
+
+    // 3) Fill fields
+    setFullName(data?.personal?.full_name ?? "");
+    setEmail(data?.personal?.email ?? "");
+    setPhone(data?.personal?.phone ?? "");
+
+    setQualification(data?.education?.highest_qualification ?? "");
+    setBranch(data?.education?.branch_or_major ?? "");
+
+    setSkills(Array.isArray(data?.skills) ? data.skills.join(", ") : "");
+
+    const emp =
+      data?.employment?.status === "Experienced" ? "Experienced" : "Fresher";
+    setEmploymentStatus(emp);
 
     markAutoFilled([
       "fullName",
@@ -75,9 +102,15 @@ export default function RegistrationPage() {
       "qualification",
       "branch",
       "skills",
-      "employmentStatus"
+      "employmentStatus",
     ]);
-  };
+  } catch (err: any) {
+    console.error(err);
+    setErrorMsg(err?.message || "Failed. Check backend + CORS.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -94,8 +127,8 @@ export default function RegistrationPage() {
         .filter(Boolean),
       employmentStatus,
       meta: {
-        resumeFileName
-      }
+        resumeFileName,
+      },
     };
 
     if (typeof window !== "undefined") {
@@ -110,7 +143,7 @@ export default function RegistrationPage() {
       "block w-full rounded-md border px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gov-accent focus-visible:ring-offset-1",
       autoFilledFields.has(key)
         ? "border-emerald-300 bg-emerald-50"
-        : "border-slate-300 bg-white"
+        : "border-slate-300 bg-white",
     ].join(" ");
 
   return (
@@ -121,17 +154,13 @@ export default function RegistrationPage() {
             Jobseeker Registration Form (Demo)
           </h2>
           <p className="mt-1 text-sm text-slate-600">
-            Upload a sample resume and review the auto-filled details. All
-            fields remain fully editable. This is a demonstration interface
-            only.
+            Upload a resume and review the auto-filled details. All fields
+            remain fully editable.
           </p>
         </div>
         <div className="hidden rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900 sm:block">
           <p className="font-semibold">Important</p>
-          <p>
-            This prototype does not submit data to any official portal. Please
-            use placeholder details only.
-          </p>
+          <p>This prototype does not submit data to any official portal.</p>
         </div>
       </div>
 
@@ -139,46 +168,61 @@ export default function RegistrationPage() {
         {/* Upload Resume */}
         <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-700">
-            Upload Resume (PDF only)
+            Upload Resume
           </h3>
           <p className="mt-1 text-xs text-slate-500">
-            For this demo, the system will{" "}
-            <span className="font-semibold">simulate</span> auto-filling based
-            on mock data when you upload any PDF file.
+            Backend extraction uses Flask endpoint{" "}
+            <span className="font-semibold">POST /extract</span>.
+            <br />
+            ✅ Best for demo: upload <span className="font-semibold">.txt</span>{" "}
+            resumes.
           </p>
+
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
             <label className="flex flex-1 cursor-pointer flex-col items-center justify-center rounded-md border border-dashed border-slate-300 bg-slate-50 px-4 py-5 text-center text-xs text-slate-600 hover:border-gov-accent hover:bg-slate-100">
               <span className="font-medium text-slate-800">
-                Click to choose PDF
+                Click to choose file (.txt recommended)
               </span>
               <span className="mt-1 text-[11px]">
-                No files are uploaded; processing happens only in your browser.
+                Uses your local Flask server at {API_BASE_URL}
               </span>
               <input
                 type="file"
-                accept="application/pdf"
+                accept=".txt,.pdf,.docx,.png,.jpg,.jpeg"
                 className="hidden"
                 onChange={handleResumeUpload}
               />
             </label>
+
             <div className="min-w-[180px] text-xs text-slate-500">
               <p className="font-medium text-slate-700">Status</p>
               <p className="mt-1">
                 {resumeFileName ? (
                   <>
-                    Sample resume selected:{" "}
+                    Selected:{" "}
                     <span className="font-semibold">{resumeFileName}</span>
                   </>
                 ) : (
                   "No file selected yet."
                 )}
               </p>
+              {loading && (
+                <p className="mt-2 text-[11px] text-slate-700">
+                  Extracting…
+                </p>
+              )}
             </div>
           </div>
+
+          {errorMsg && (
+            <p className="mt-3 rounded-md bg-red-50 px-3 py-2 text-[12px] text-red-700">
+              {errorMsg}
+            </p>
+          )}
+
           {autoFilledFields.size > 0 && (
             <p className="mt-3 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-medium text-emerald-800">
-              Fields highlighted in light green have been auto-filled with mock
-              data and can be edited before proceeding.
+              Fields highlighted in green were auto-filled from Flask response.
             </p>
           )}
         </section>
@@ -199,6 +243,7 @@ export default function RegistrationPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
+                autoComplete="off"
               />
             </div>
             <div>
@@ -211,6 +256,7 @@ export default function RegistrationPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                autoComplete="off"
               />
             </div>
             <div>
@@ -223,6 +269,7 @@ export default function RegistrationPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required
+                autoComplete="off"
               />
             </div>
           </div>
@@ -243,8 +290,8 @@ export default function RegistrationPage() {
                 className={fieldClasses("qualification")}
                 value={qualification}
                 onChange={(e) => setQualification(e.target.value)}
-                placeholder="e.g., Bachelor of Engineering"
                 required
+                autoComplete="off"
               />
             </div>
             <div>
@@ -256,8 +303,8 @@ export default function RegistrationPage() {
                 className={fieldClasses("branch")}
                 value={branch}
                 onChange={(e) => setBranch(e.target.value)}
-                placeholder="e.g., Computer Science"
                 required
+                autoComplete="off"
               />
             </div>
           </div>
@@ -278,9 +325,10 @@ export default function RegistrationPage() {
                 className={fieldClasses("skills")}
                 value={skills}
                 onChange={(e) => setSkills(e.target.value)}
-                placeholder="e.g., Java, SQL, Communication, Problem Solving"
+                autoComplete="off"
               />
             </div>
+
             <div>
               <label className="block text-xs font-medium text-slate-700">
                 Employment Status
@@ -309,23 +357,17 @@ export default function RegistrationPage() {
                   Experienced
                 </button>
               </div>
-              {autoFilledFields.has("employmentStatus") && (
-                <p className="mt-1 text-[11px] text-emerald-700">
-                  Auto-selected based on resume (mock).
-                </p>
-              )}
             </div>
           </div>
         </section>
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[11px] text-slate-500">
-            After review, proceed to view a structured profile summary that you
-            can copy into an official portal.
+            Proceed to view a structured profile summary.
           </p>
           <button
             type="submit"
-            className="inline-flex items-center justify-center rounded-md bg-gov-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gov-accent focus-visible:ring-offset-2"
+            className="inline-flex items-center justify-center rounded-md bg-gov-accent px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-900"
           >
             Review Profile Summary
           </button>

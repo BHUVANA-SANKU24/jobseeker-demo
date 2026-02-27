@@ -215,6 +215,18 @@ def clean_skill(token: str) -> bool:
     if len(token.split()) > 4:
         return False
 
+    # ✅ NEW: reject separator lines like _________ or ----- or =====
+    if re.fullmatch(r"[_=\-]{3,}", token):
+        return False
+
+    # ✅ NEW: reject tokens that are mostly underscores/dashes
+    if len(token) >= 10 and (_digits_only(token) == "" and token.count("_") / len(token) > 0.6):
+        return False
+
+    # ❌ reject pure numbers
+    if token.isdigit():
+        return False 
+    
     # ❌ reject generic non-skill words
     reject_exact = {
         "learning",
@@ -277,9 +289,11 @@ def extract_skills(text: str, sections: Dict[str, str]) -> Tuple[List[str], floa
         tokens = re.split(r"[,\n•|/]+", raw)
         for t in tokens:
             tt = t.strip()
-
             tt = re.sub(r"[()]+", "", tt).strip()     # remove brackets: "(Basic)" -> "Basic"
             tt = tt.replace(".js", "").strip()        # "React.js" -> "React"
+
+            tt = re.sub(r"[_=\-]{3,}", "", tt).strip()
+            tt = tt.strip(" ,.;:_-")
 
             if not clean_skill(tt):
                 continue
@@ -302,24 +316,44 @@ def extract_skills(text: str, sections: Dict[str, str]) -> Tuple[List[str], floa
     return skills, (0.85 if raw else 0.65)
 
 
+# -----------------------------
+# UPDATED: Education extraction (choose HIGHEST degree reliably)
+# -----------------------------
+QUAL_RANKS: List[Tuple[str, int, str, str]] = [
+    # (label, rank, pattern, normalized_output)
+    ("phd", 7, r"\b(ph\.?d|doctorate)\b", "PHD"),
+    ("masters", 6, r"\b(m\.?\s*tech|mtech|m\.?\s*e\b|me\b|mba|m\.?\s*sc|msc|mca|masters?)\b", "MASTERS"),
+    ("bachelors", 5, r"\b(b\.?\s*tech|btech|b\.?\s*e\b|be\b|b\.?\s*sc|bsc|bca|bcom|b\.?\s*com|bba|ba|bachelors?)\b", "BACHELORS"),
+    ("diploma", 4, r"\b(diploma|polytechnic)\b", "DIPLOMA"),
+    ("intermediate", 3, r"\b(intermediate|12th|xii|higher\s*secondary|hsc)\b", "INTERMEDIATE"),
+    ("ssc", 2, r"\b(ssc|10th|x\b|secondary\s*school)\b", "SSC"),
+]
+
+def detect_highest_qualification(hay: str) -> str:
+    """
+    Picks the highest qualification present in the text.
+    Fixes cases where "Intermediate" is found but "B.Tech" also exists.
+    """
+    best_rank = -1
+    best_out = ""
+    for _label, rank, pattern, out in QUAL_RANKS:
+        if re.search(pattern, hay, flags=re.IGNORECASE):
+            if rank > best_rank:
+                best_rank = rank
+                best_out = out
+    return best_out
+
+
 def extract_education(text: str, sections: Dict[str, str]) -> Tuple[Dict[str, str], float]:
     edu = sections.get("education", "")
     hay = (edu if edu else text).lower()
 
-    degree = ""
-    for d in DEGREE_KEYWORDS:
-        if re.search(rf"(?<!\w){re.escape(d)}(?!\w)", hay):
-            # normalize a bit
-            if "bachelor" in d:
-                degree = "BTECH"
-            elif "master" in d:
-                degree = "MTECH"
-            else:
-                degree = d.upper().replace(".", "")
-            break
+    # ✅ choose highest degree using ranks
+    degree = detect_highest_qualification(hay)
 
+    # ✅ branch detection (prefer longer/more specific matches)
     branch = ""
-    for b in BRANCH_KEYWORDS:
+    for b in sorted(BRANCH_KEYWORDS, key=len, reverse=True):
         if re.search(rf"(?<!\w){re.escape(b)}(?!\w)", hay):
             branch = b.upper()
             break
@@ -333,7 +367,7 @@ def extract_education(text: str, sections: Dict[str, str]) -> Tuple[Dict[str, st
     if not (degree or branch or institute):
         return {"highest_qualification": "", "branch_or_major": "", "institute": ""}, 0.0
 
-    conf = 0.8 if edu else 0.6
+    conf = 0.85 if edu else 0.65
     return {
         "highest_qualification": degree,
         "branch_or_major": branch,
@@ -380,33 +414,115 @@ def extract_employment(text: str, sections: Dict[str, str]) -> Tuple[Dict[str, s
 
     return {"status": "Fresher", "years_experience": ""}, 0.75
 
+def extract_experience_details(text: str, sections: Dict[str, str]) -> Tuple[List[Dict[str, str]], float]:
+    exp = sections.get("experience", "")
+    if not exp:
+        return [], 0.0
+
+    lines = [ln.strip() for ln in exp.split("\n") if ln.strip()]
+    results: List[Dict[str, str]] = []
+
+    # "June 2022 – Present" / "July 2021 - May 2022"
+    date_re = re.compile(
+        r"\b([A-Za-z]{3,9}\s+\d{4})\s*[-–]\s*(Present|[A-Za-z]{3,9}\s+\d{4})\b",
+        re.I
+    )
+
+    for i, ln in enumerate(lines):
+        m = date_re.search(ln)
+        if not m:
+            continue
+
+        start = m.group(1).strip()
+        end = m.group(2).strip()
+        tenure = f"{start} - {end}"
+
+        role = lines[i - 1] if i - 1 >= 0 else ""
+        company = lines[i - 2] if i - 2 >= 0 else ""
+
+        # Cleanup: avoid role/company being date/empty/junk
+        if date_re.search(role or ""):
+            role = ""
+        if date_re.search(company or ""):
+            company = ""
+
+        # Sometimes company line contains location/dash; keep but trim
+        company = re.sub(r"\s{2,}", " ", company).strip()
+        role = re.sub(r"\s{2,}", " ", role).strip()
+
+        results.append({
+            "role": role,
+            "company": company,
+            "start": start,
+            "end": end,
+            "tenure": tenure,   # ✅ important for profile_text + UI
+        })
+
+    return results, (0.80 if results else 0.40)
+
+
+# -----------------------------
+# UPDATED: Better name extraction (handles ALL CAPS names + skips noise)
+# -----------------------------
+def _title_case_name(s: str) -> str:
+    s = re.sub(r"\s+", " ", s).strip()
+    if s and s.upper() == s:
+        return " ".join(w.capitalize() for w in s.split())
+    return s
+
 
 def extract_name(text: str, sections: Dict[str, str]) -> Tuple[str, float]:
     """
-    Best-effort:
-    - Check first ~8 lines in __top__ for name-like text
-    - Else spaCy PERSON entity
+    Better name extraction:
+    - First try FIRST line of the whole resume text
+    - Then try __top__
+    - Skip titles like Data Analyst/Developer etc.
     """
-    top_lines = sections.get("__top__", "").split("\n")[:8]
-    ignore_words = ("linkedin", "github", "portfolio", "resume", "email", "phone", "www")
+    def is_bad_name(s: str) -> bool:
+        low = s.lower().strip()
+        bad_titles = {
+            "data analyst", "software developer", "developer",
+            "engineer", "student", "intern", "summary", "objective"
+        }
+        return low in bad_titles
 
-    for ln in top_lines:
-        cand = ln.strip()
-        if not cand:
+    # 1) Try very first meaningful line of FULL resume
+    all_lines = [ln.strip() for ln in text.split("\n") if ln.strip()]
+    for ln in all_lines[:8]:
+        if "@" in ln or re.search(r"\d", ln):
             continue
-        low = cand.lower()
-        if any(w in low for w in ignore_words):
-            continue
-        if "@" in cand or any(ch.isdigit() for ch in cand):
-            continue
-        if 2 <= len(cand.split()) <= 5 and re.fullmatch(r"[A-Za-z .'-]+", cand):
-            return cand, 0.70
+        cleaned = re.sub(r"[^A-Za-z .'-]", "", ln).strip()
+        cleaned = re.sub(r"\s+", " ", cleaned).strip()
 
+        words = cleaned.split()
+        if 2 <= len(words) <= 5 and not is_bad_name(cleaned):
+            return _title_case_name(cleaned), 0.90
+
+    # 2) Fallback: __top__ section
+    top = (sections.get("__top__", "") or "").strip()
+    top_lines = [ln.strip() for ln in top.split("\n") if ln.strip()]
+
+    ignore_contains = ("linkedin", "github", "portfolio", "resume", "email", "phone", "www", "http")
+    for ln in top_lines[:15]:
+        low = ln.lower()
+        if any(w in low for w in ignore_contains):
+            continue
+        if "@" in ln or re.search(r"\d", ln):
+            continue
+
+        cleaned = re.sub(r"[^A-Za-z .'-]", "", ln).strip()
+        cleaned = re.sub(r"\s+", " ", cleaned).strip()
+
+        words = cleaned.split()
+        if 2 <= len(words) <= 5 and not is_bad_name(cleaned):
+            return _title_case_name(cleaned), 0.80
+
+    # 3) spaCy fallback
     if _NLP:
-        doc = _NLP("\n".join(top_lines))
+        doc = _NLP("\n".join(all_lines[:15]))
         persons = [ent.text.strip() for ent in doc.ents if ent.label_ == "PERSON"]
         if persons:
-            return persons[0], 0.55
+            return _title_case_name(persons[0]), 0.55
 
     return "", 0.0
 
@@ -476,6 +592,9 @@ def extract_profile(resume_text: str) -> Dict:
     employment, c_emp = extract_employment(text, sections)
     name, c_name = extract_name(text, sections)
 
+    # ✅ NEW: structured experience extraction (role/company/tenure)
+    experience_details, c_exp_details = extract_experience_details(text, sections)
+
     profile = {
         "personal": {
             "full_name": name,
@@ -485,6 +604,10 @@ def extract_profile(resume_text: str) -> Dict:
         "education": education,
         "employment": employment,
         "skills": skills,
+
+        # ✅ NEW FIELD
+        "experience_details": experience_details,
+
         "confidence": {
             "full_name": round(c_name, 2),
             "email": round(c_email, 2),
@@ -492,6 +615,9 @@ def extract_profile(resume_text: str) -> Dict:
             "education": round(c_edu, 2),
             "skills": round(c_skills, 2),
             "employment": round(c_emp, 2),
+
+            # ✅ NEW CONFIDENCE KEY
+            "experience_details": round(c_exp_details, 2),
         },
         "warnings": []
     }
@@ -499,7 +625,16 @@ def extract_profile(resume_text: str) -> Dict:
     # warnings
     profile["warnings"] = build_warnings(profile)
 
-    # ✅ NEW: copy-ready text (for UI "Copy to Official Portal" button)
+    # ✅ copy-ready text (for UI "Copy to Official Portal" button)
+    experience_text = ""
+    if experience_details:
+        experience_text = "\n".join(
+            [
+                f"- {x.get('role','')} | {x.get('company','')} | {x.get('tenure','')}".strip()
+                for x in experience_details
+            ]
+        )
+
     profile["profile_text"] = (
         f"Full Name: {profile['personal']['full_name']}\n"
         f"Email: {profile['personal']['email']}\n"
@@ -509,6 +644,7 @@ def extract_profile(resume_text: str) -> Dict:
         f"Institute: {profile['education']['institute']}\n"
         f"Employment: {profile['employment']['status']} {profile['employment']['years_experience']}\n"
         f"Skills: {', '.join(profile['skills'])}\n"
+        + (f"Experience:\n{experience_text}\n" if experience_text else "")
     )
 
     return profile

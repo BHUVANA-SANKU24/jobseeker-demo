@@ -1,0 +1,108 @@
+Rohan Mehta
+
+?? Hyderabad, India
+?? +91 9XXXXXXXXX
+?? rohan.mehta@email.com
+
+?? linkedin.com/in/rohanmehta
+?? github.com/rohanmehta
+
+Professional Summary
+
+Results-driven Software Developer with 3+ years of experience in designing, developing, and deploying scalable web applications. Strong expertise in backend development, cloud services, and RESTful APIs. Experienced in AWS, microservices architecture, and database optimization. Passionate about writing clean, maintainable code and delivering high-performance applications.
+
+Work Experience
+Software Developer
+
+TechNova Solutions Pvt Ltd – Hyderabad
+June 2022 – Present
+
+Designed and developed RESTful APIs using Node.js and Express.
+
+Deployed serverless applications using AWS Lambda and API Gateway.
+
+Integrated AWS Rekognition for facial recognition-based authentication systems.
+
+Improved application performance by 30% through database query optimization.
+
+Led a team of 4 developers in implementing cloud-based attendance management software.
+
+Implemented CI/CD pipelines using GitHub Actions.
+
+Junior Software Engineer
+
+ByteWave Technologies – Bengaluru
+July 2021 – May 2022
+
+Developed responsive frontend applications using React.js.
+
+Worked with MySQL and MongoDB databases.
+
+Collaborated with UI/UX designers to improve user experience.
+
+Fixed bugs and improved application stability by 25%.
+
+Participated in Agile sprint planning and daily standups.
+
+Technical Skills
+
+Programming Languages:
+
+C++, JavaScript, Python
+
+Frontend:
+
+HTML5, CSS3, React.js, Bootstrap
+
+Backend:
+
+Node.js, Express.js
+
+Cloud & DevOps:
+
+AWS (Lambda, EC2, S3, DynamoDB, Rekognition)
+
+Docker (Basic)
+
+Git & GitHub
+
+Databases:
+
+MySQL
+
+MongoDB
+
+DynamoDB
+
+Projects
+AI-Based Attendance System
+
+Built a facial recognition attendance system using AWS Rekognition.
+
+Implemented secure user authentication and role-based access.
+
+Deployed backend using AWS SAM and Lambda.
+
+Event Management Platform
+
+Developed a full-stack event booking platform.
+
+Integrated payment gateway and vendor dashboard.
+
+Built analytics dashboard for tracking bookings and revenue.
+
+Education
+
+B.Tech in Computer Science Engineering
+JNTU University
+2017 – 2021
+
+Certifications
+
+AWS Certified Cloud Practitioner
+
+Full Stack Web Development Certification – Udemy
+
+Achievements
+
+Employee of the Month – December 2023
