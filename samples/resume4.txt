@@ -1,0 +1,13 @@
+PARASU JAYA RUTHVIK 
+Hyderabad | 9398621520 | parasujayaruthvik@gmail.com 
+LinkedIn: parasu-jaya-ruthvik-b21398355 SUMMARY _________________________________________________________________
+Computer Science student with strong communication, persuasive, and leadership skills. Proficient in C++ and AWS, with a keen interest in cloud computing and problem-solving. Passionate about applying technology to address real-world challenges and delivering innovative, data-driven solutions. Brings a combination of technical expertise and interpersonal skills that enhance teamwork and organizational growth.
+ EDUCATION 
+___________________________________________________________ 
+Bachelor of Technology, Computer Science Gokaraju Rangaraju Institute of Engineering and Technology | 
+Hyderabad 2023 – 2027 Intermediate (11th & 12th) — Sri Chaitanya Junior College | Hyderabad | 2021–2023 
+SKILLS
+ ________________________________________________________ 
+Technical: C++, AWS,
+ Professional: Problem-solving, Leadership, Time Management ______________________________________________________________________________ PROJECTS 
+Facial Recognition Attendance SystemJan 2025 – Apr 2025 Built an automated attendance system using AWS Rekognition, Lambda, and DynamoDB to detect and record student attendance through facial recognition. Enhanced efficiency and reduced manual intervention through serverless architecture on AWS.

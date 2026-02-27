@@ -1,0 +1,44 @@
+SRUJITH VEMPATI
+ Hyderabad | +91 9573409960 | vsrujith2005@gmail.com | WWW: linkedin.com/in/vempati-srujith-52b0bb346/
+Education
+Gokaraju Rangaraju Institute of Engineering & Technology 2023-2027 
+Bachelor of Technology (B.Tech.) in Computer Science | CGPA - 9.26 
+ 
+Narayana Junior College 
+TSBIE (Telangana State Board of Intermediate Education) | Class XII - 98.9%
+ TSB 
+Skills Summary
+• Java
+• C
+• HTML & CSS
+• JavaScript
+• Django Framework
+• MERN Stack
+• Database Management Systems
+• Teamwork and collaboration
+• Time management
+Experience
+Senior Member | Web Development 11/2023 to Current
+Advanced Academic Centre, GRIET
+Hyderabad, India.
+Member (08/2023 – 08/2024)
+• Built a full-stack web application using Next.js, React, Prisma and NextAuth as part of a first-year project.
+Certifications & Extracurricular Activities
+• Python 3.4.3 Training Certification, Spoken Tutorials, IIT Bombay
+• Participated in ZSCALER Workshop, conducted by SDC-SB at GRIET 
+• Participated in Udhgam 2025 Hackathon at Woxsen University
+Projects
+Campus Link: Connecting Students & Alumni (Group Project) | AAC 
+• Campus Link is a web platform that enables students to connect with their alumni’ s for opportunities posted by 
+them and alumni can login and post new internships and projects.
+• Verified Network – Login with Gmail provided for the alumni and email verification for Students.
+• Student Portal – Easy access to opportunities to build their skills.
+• Admin Portal – Post and track applications of Students.
+Tech Stack: Next.js | React | Prisma | NextAuth
+KnowYourBallot: Empowering young voters with election insights | (Udhgam Hackathon)
+• KnowYourBallot is a web-based platform providing young voters with constituency-specific candidate details 
+and voting guidelines ensuring correctness during voting process.
+• Detailed Information – Candidates information is ensured to be correct and unambiguous.
+• Voters Portal – Voting Guidelines and Candidates Information
+• Candidates Portal – Give their information for gaining the trust of voters
+Tech Stack: Figma | MERN

@@ -1,0 +1,43 @@
+Bhuvana Sanku
+Hyderabad, Telangana 91+ 784274592 bhuvana.sanku@gmail.com
+github.com/BHUVANA-SANKU24
+EDUCATION
+Bachelor of Technology in Computer Science and Engineering 2023 – 2027 | Hyderabad, Telangana
+Gokaraju Rangaraju Institute of Engineering and Technology
+CLASS XII 2021 – 2023 | Hyderabad, Telangana
+P. Obul Reddy Public School
+TECHNICAL SKILLS
+Programming and Core CS: Java Python C SQL DSA DBMS Operating Systems Computer Networks
+Web Development: HTML CSS JavaScript PHP
+PROFESSIONAL EXPERIENCE
+Google AI-ML Virtual Internship
+•Built and evaluated ML models using Python, TensorFlow, and Scikit-learn; performed data preprocessing, feature
+engineering, and training.
+•Improved model performance and stability by applying normalization, feature selection, and hyperparameter
+tuning.
+•Designed structured experiment pipelines and documented outcomes to improve reproducibility and team
+readability.
+Adobe Hackathon
+•Collaborated in a time-bound innovation sprint to ideate, prototype, and pitch a technology solution under
+competitive constraints.
+•Demonstrated execution speed, teamwork, and product thinking through iterative development and final demo
+delivery.
+PROJECTS
+Air Canvas AI (Real-Time Gesture-Based Drawing System), Python, OpenCv, MediaPipe, Computer Vision,
+•Developed a real-time gesture-based virtual drawing system using MediaPipe hand landmarks for hand tracking and
+interaction.
+•Implemented multi-mode recognition: sketch object detection, OCR pipeline for math and text extraction and
+integrated ML-based sketch classification.
+Celebr8 - Event Management Website (Full Stack Web App), HTML, CSS, JavaScript, PHP, MySQL
+•Developed a full-stack event platform enabling users to create, manage, and register for events through a centralized
+web portal.
+•Built secure authentication and role-based access for organizers and participants.
+•Designed MySQL database schema and built CRUD workflows for events, registrations, and participant management
+with real-time updates.
+CERTIFICATES
+Oracle Gen AI Certification - Oracle Academy: Completed hands-on learning in OCI AI Services, including
+language, vision, anomaly detection, and ML fundamentals.
+Infosys Springboard - JavaScript Certification: Demonstrated working knowledge of frontend development using
+HTML, CSS and JavaScript, focusing on DOM, logic, and integration.
+Fundamentals of Cybersecurity - ZScaler Academy: Trained in identifying common threats including phishing,
+malware, and social engineering, with mitigation best practices
