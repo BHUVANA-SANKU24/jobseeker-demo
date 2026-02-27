@@ -1,0 +1,34 @@
+{
+    "version": "1.0",
+    "profile": {
+      "personal": {
+        "name": "<Full Name>",
+        "email": "<Email Address>",
+        "phone": "<10 Digit Phone>",
+        "dob": "<YYYY-MM-DD>",
+        "gender": "<Male/Female/Other>"
+      },
+      "education": {
+        "highest_degree": "<Degree>",
+        "branch": "<Branch>",
+        "institution": "<Institution Name>",
+        "year_of_passing": "<YYYY>",
+        "percentage": "<Percentage or CGPA>"
+      },
+      "skills": [
+        "<Skill 1>",
+        "<Skill 2>",
+        "<Skill 3>"
+      ],
+      "employment": {
+        "status": "<Fresher/Experienced>",
+        "experience_years": "<Number>",
+        "last_company": "<Company Name>"
+      },
+      "address": {
+        "state": "<State>",
+        "district": "<District>",
+        "pincode": "<6 Digit Code>"
+      }
+    }
+  }

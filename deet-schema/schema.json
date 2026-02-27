@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "profile": {
+    "personal": {
+      "name": "",
+      "email": "",
+      "phone": "",
+      "dob": "",
+      "gender": ""
+    },
+    "education": {
+      "highest_degree": "",
+      "branch": "",
+      "institution": "",
+      "year_of_passing": "",
+      "percentage": ""
+    },
+    "skills": [],
+    "employment": {
+      "status": "",
+      "experience_years": "",
+      "last_company": ""
+    },
+    "address": {
+      "state": "",
+      "district": "",
+      "pincode": ""
+    }
+  }
+}

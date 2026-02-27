@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://deet.local/schemas/deet-profile-1.0.schema.json",
+  "title": "DEET Profile Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "profile"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["personal", "education", "skills", "employment", "address"],
+      "properties": {
+        "personal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "email", "phone"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "email": {
+              "type": "string",
+              "pattern": "^[\\w\\.-]+@[\\w\\.-]+\\.\\w+$"
+            },
+            "phone": { "type": "string", "pattern": "^\\d{10}$" },
+            "dob": { "type": ["string", "null"] },
+            "gender": { "type": ["string", "null"] }
+          }
+        },
+        "education": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["highest_degree", "year_of_passing"],
+          "properties": {
+            "highest_degree": { "type": "string", "minLength": 1 },
+            "branch": { "type": ["string", "null"] },
+            "institution": { "type": ["string", "null"] },
+            "year_of_passing": {
+              "type": "string",
+              "pattern": "^(19\\d{2}|20\\d{2}|2100)$"
+            },
+            "percentage": { "type": ["string", "null"] }
+          }
+        },
+        "skills": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "employment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "experience_years", "last_company"],
+          "properties": {
+            "status": { "type": "string", "enum": ["Fresher", "Experienced"] },
+            "experience_years": { "type": ["string", "null"] },
+            "last_company": { "type": ["string", "null"] }
+          }
+        },
+        "address": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["state", "district", "pincode"],
+          "properties": {
+            "state": { "type": ["string", "null"] },
+            "district": { "type": ["string", "null"] },
+            "pincode": { "type": ["string", "null"], "pattern": "^\\d{6}$" }
+          }
+        }
+      }
+    }
+  }
+}
